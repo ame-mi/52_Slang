@@ -1,2 +1,2 @@
-# 52_Slang
-A computer vision project that helps to detect the most popular gestures of Russian teenage slang. 
+# Tetris_MediaPipe
+A program that will help you to play tetris without touching your computer.
