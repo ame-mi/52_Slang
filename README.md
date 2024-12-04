@@ -1,32 +1,34 @@
 # Ниже представлена программа, которая будет все, собственно, делать
 
+# Все импорты
 import pygame
 import random
 import cv2
 import mediapipe as mp
 import numpy as np
 
+# Получаем наши ручки
 def get_points(landmark, shape):
     points = []
     for mark in landmark:
         points.append([mark.x * shape[1], mark.y * shape[0]])
     return np.array(points, dtype=np.int32)
 
+# И размеры ладошки
 def palm_size(landmark, shape):
     x1, y1 = landmark[0].x * shape[1], landmark[0].y * shape[0]
     x2, y2 = landmark[5].x * shape[1], landmark[5].y * shape[0]
-    return ((x1 - x2)**2 + (y1 - y2) **2) **.5
+    return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** .5
 
-# Добавление кнопки "Инструкция" и функции для показа инструкций
+# Штучка, которая показывает инструкции
 def display_instructions():
-    """Показывает экран с инструкцией и кнопкой 'Обратно'."""
     ekran.fill(BELYI)
 
     font_title = pygame.font.SysFont('Calibri', 30, True, False)
     font_button = pygame.font.SysFont('Calibri', 20, True, False)
     small_font = pygame.font.SysFont('Calibri', 17, True, False)
 
-    # Текст инструкции
+    # Текст
     instruction_text_lines = [
         "Инструкция:",
         "- Чтобы начать игру, нажмите 'Начать игру'.",
@@ -38,14 +40,14 @@ def display_instructions():
 
     rendered_lines = [small_font.render(line, True, CHERNYY) for line in instruction_text_lines]
 
-    # Отрисовка текста с центрированием
+    # Отрисовка текста
     y_offset = (razmer[1] // 2 - len(rendered_lines) * small_font.get_height() // 2)
     for i, line_surface in enumerate(rendered_lines):
         x = razmer[0] // 2 - line_surface.get_width() // 2
         y = y_offset + i * small_font.get_height()
         ekran.blit(line_surface, (x, y))
 
-    # Кнопка "Обратно"
+    # Кнопка назад
     button_rect_back = pygame.Rect(100, 400, 200, 50)
     pygame.draw.rect(ekran, SERYI, button_rect_back)
     back_text = font_button.render("Обратно", True, BELYI)
@@ -79,9 +81,9 @@ def up_palec(landmarks):
 
     # Проверяем, поднят ли кончик указательного пальца выше остальных
     if (landmarks.landmark[INDEX_TIP].y < landmarks.landmark[INDEX_BASE].y and  # Кончик выше основания
-        landmarks.landmark[INDEX_TIP].y < landmarks.landmark[MIDDLE_TIP].y and  # Кончик выше конца среднего пальца
-        landmarks.landmark[INDEX_TIP].y < landmarks.landmark[RING_TIP].y and  # Кончик выше конца безымянного пальца
-        landmarks.landmark[INDEX_TIP].y < landmarks.landmark[PINKY_TIP].y):  # Кончик выше конца мизинца
+            landmarks.landmark[INDEX_TIP].y < landmarks.landmark[MIDDLE_TIP].y and  # Кончик выше конца среднего пальца
+            landmarks.landmark[INDEX_TIP].y < landmarks.landmark[RING_TIP].y and  # Кончик выше конца безымянного пальца
+            landmarks.landmark[INDEX_TIP].y < landmarks.landmark[PINKY_TIP].y):  # Кончик выше конца мизинца
         return True
 
     return False
@@ -97,6 +99,7 @@ cveta = [
     (180, 34, 22),  # Красный
     (180, 34, 122),  # Розовый
 ]
+
 
 # Тут придется попотеть, потому что чтобы создать фигуру, я хочу сделать отдельный класс
 # Этот лайфхак я подсмотрела на зарубежных сайтах, но данный код мой
@@ -129,13 +132,14 @@ class Figura:
     def povernut(self):
         self.povorot = (self.povorot + 1) % len(self.figury[self.tip])
 
+
 # Непосредственно класс, который управляет самой игрой.
 # Поскольку недавно мы проходили классы, это наилучший из вариантов
 class Tetris:
     def __init__(self, vysota, shirina):
-        self.uroven = 10  # Уровень сложности
+        self.uroven = 5  # Уровень сложности (скорости движения фигур)
         self.schet = 0  # Наши считаемые баллы
-        self.sostoyanie = "start"  # Работает игра сейчас или нет, в каком она находится состоянии
+        self.sostoyanie = "start"  # Работает игра сейчас или нет в каком она находится состоянии
         self.pole = []  # Игровое поле
         self.vysota = 0
         self.shirina = 0
@@ -160,7 +164,7 @@ class Tetris:
     def novaya_figura(self):
         self.figura = Figura(3, 0)
 
-    # Проверяем, что они не пересекаются
+    # Проверяем что они не пересекаются
     def peresechenie(self):
         peresechenia = False
         for i in range(4):
@@ -188,14 +192,12 @@ class Tetris:
                         self.pole[i1][j] = self.pole[i1 - 1][j]
         self.schet += lines ** 2 * 1000
 
-
     def go_space(self):
         while not self.peresechenie():
             self.figurа.y += 1
         self.figurа.y -= 1
         self.fiksatsiya()
         sound1.play()
-
 
     # Спускаем фигру вниз
     def v_niz(self):
@@ -230,23 +232,21 @@ class Tetris:
         if self.peresechenie():
             self.figura.povorot = star_povorot
 
-# Инициализация Mediapipe и OpenCV
-handsDetector = mp.solutions.hands.Hands()
-# ruki = handsDetector.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 
-# Инициализация Pygame
+
+handsDetector = mp.solutions.hands.Hands()
 pygame.init()
 
+# Блок с музычкой
 pygame.mixer.music.load('BackG.mp3')
 pygame.mixer.music.play(-1)
 pygame.mixer.music.set_volume(0.1)
-
 sound1 = pygame.mixer.Sound('Placed.mp3')
 sound2 = pygame.mixer.Sound('GameO.mp3')
 sound3 = pygame.mixer.Sound('Win.mp3')
 sound4 = pygame.mixer.Sound('Click.mp3')
 
-# Определение цветов
+# Цвета
 CHERNYY = (0, 0, 0)
 BELYI = (255, 255, 255)
 SERYI = (128, 128, 128)
@@ -264,10 +264,7 @@ chas = pygame.time.Clock()
 fps = 25
 igra = Tetris(20, 10)
 igra.novaya_figura()
-
-# Переменные для кулачков, которые будут двигать фигурку
 schetchik = 0
-
 
 # Делаем начало
 def pokazat_menu():
@@ -290,8 +287,9 @@ def pokazat_menu():
                (start_button_rect.x + start_button_rect.width // 2 - start_button_text.get_width() // 2,
                 start_button_rect.y + start_button_rect.height // 2 - start_button_text.get_height() // 2))
     ekran.blit(instruction_button_text,
-               (instruction_button_rect.x + instruction_button_rect.width // 2 - instruction_button_text.get_width() // 2,
-                instruction_button_rect.y + instruction_button_rect.height // 2 - instruction_button_text.get_height() // 2))
+               (
+                   instruction_button_rect.x + instruction_button_rect.width // 2 - instruction_button_text.get_width() // 2,
+                   instruction_button_rect.y + instruction_button_rect.height // 2 - instruction_button_text.get_height() // 2))
 
     pygame.display.flip()
     return start_button_rect, instruction_button_rect
@@ -315,14 +313,14 @@ while menu_active:
                 sound4.play()
                 display_instructions()
 
+# Сама игра которая передает наши ручки в тетрис
 
-# Сама игра
 
 prev_fist_left = False
 prev_fist_right = False
 musica = False
 
-while(cap.isOpened()):
+while (cap.isOpened()):
     ret, frame = cap.read()
     if cv2.waitKey(1) & 0xFF == ord('q') or not ret:
         break
@@ -332,9 +330,9 @@ while(cap.isOpened()):
     # Распознаем
     results = handsDetector.process(flippedRGB)
 
-
-    if results.multi_hand_landmarks:
+    if results.multi_hand_landmarks is not None:
         for hand_idx, hand_landmarks in enumerate(results.multi_hand_landmarks):
+            handedness = results.multi_handedness[hand_idx].classification[0].label  # 'Right' или 'Left'
             # Получаем точки и параметры руки
             points = get_points(hand_landmarks.landmark, flippedRGB.shape)
             (x, y), r = cv2.minEnclosingCircle(points)
@@ -343,13 +341,14 @@ while(cap.isOpened()):
             # Рисуем контуры
             cv2.drawContours(flippedRGB, [points], 0, (255, 0, 0), 2)
 
+            # print(f"Hand: {hand_idx}, Handedness: {handedness}, Fist Detected: {prev_fist_left}/{prev_fist_right}")
+
             # Проверяем соотношение размера окружности к размеру ладони
             if 2 * r / ws > 1.3:
                 cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 0, 255), 2)
                 # Кулак разжат
 
-
-                if hand_idx == 0:
+                if hand_idx == 0 :
                     prev_fist_left = False
                 else:
                     prev_fist_right = False
@@ -368,10 +367,6 @@ while(cap.isOpened()):
                 if prev_fist_right and prev_fist_left:
                     igra.povernut()
 
-
-
-
-
     # Движение вниз
     schetchik += 1
     if schetchik % (fps // igra.uroven) == 0 and igra.sostoyanie == "start":
@@ -386,9 +381,13 @@ while(cap.isOpened()):
     ekran.fill(BELYI)
     for i in range(igra.vysota):
         for j in range(igra.shirina):
-            pygame.draw.rect(ekran, SERYI, [igra.x + igra.uvelichenie * j, igra.y + igra.uvelichenie * i, igra.uvelichenie, igra.uvelichenie], 1)
+            pygame.draw.rect(ekran, SERYI,
+                             [igra.x + igra.uvelichenie * j, igra.y + igra.uvelichenie * i, igra.uvelichenie,
+                              igra.uvelichenie], 1)
             if igra.pole[i][j] > 0:
-                pygame.draw.rect(ekran, cveta[igra.pole[i][j]], [igra.x + igra.uvelichenie * j + 1, igra.y + igra.uvelichenie * i + 1, igra.uvelichenie - 2, igra.uvelichenie - 2])
+                pygame.draw.rect(ekran, cveta[igra.pole[i][j]],
+                                 [igra.x + igra.uvelichenie * j + 1, igra.y + igra.uvelichenie * i + 1,
+                                  igra.uvelichenie - 2, igra.uvelichenie - 2])
 
     if igra.figura:
         for i in range(4):
@@ -400,14 +399,8 @@ while(cap.isOpened()):
                                       igra.y + igra.uvelichenie * (i + igra.figura.y) + 1,
                                       igra.uvelichenie - 2, igra.uvelichenie - 2])
 
-    # Показываем наше видео
-    # cv2.imshow("Kulachok", otrazheniye)
-    # if cv2.waitKey(1) & 0xFF == ord('q'):
-    #     break
-    # переводим в BGR и показываем результат
     res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
     cv2.imshow("Hands", res_image)
-    # print(results.multi_handedness)
 
     font = pygame.font.SysFont('Calibri', 25, True, False)
     font1 = pygame.font.SysFont('Calibri', 65, True, False)
@@ -424,7 +417,7 @@ while(cap.isOpened()):
         if not musica:
             sound2.play()
             musica = True
-    if igra.schet >= 1000:
+    if igra.schet >= 2000:
         ekran.blit(text_game_win, [20, 200])
         ekran.blit(text_game_over1, [25, 265])
         pygame.mixer.music.pause()
@@ -439,12 +432,10 @@ while(cap.isOpened()):
             pygame.quit()
             exit()
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:  # Проверяем нажатие клавиши Escape
+            if event.key == pygame.K_ESCAPE:
                 cap.release()
                 pygame.quit()
                 exit()
-
-
 
     pygame.display.flip()
     chas.tick(fps)
