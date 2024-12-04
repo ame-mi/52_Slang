@@ -417,7 +417,7 @@ while (cap.isOpened()):
         if not musica:
             sound2.play()
             musica = True
-    if igra.schet >= 2000:
+    if igra.schet >= 4999:
         ekran.blit(text_game_win, [20, 200])
         ekran.blit(text_game_over1, [25, 265])
         pygame.mixer.music.pause()
