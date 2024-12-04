@@ -63,6 +63,7 @@ def display_instructions():
                 exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if button_rect_back.collidepoint(event.pos):
+                    sound4.play()
                     return  # Возврат в главное меню
 
 
@@ -132,7 +133,7 @@ class Figura:
 # Поскольку недавно мы проходили классы, это наилучший из вариантов
 class Tetris:
     def __init__(self, vysota, shirina):
-        self.uroven = 5  # Уровень сложности
+        self.uroven = 10  # Уровень сложности
         self.schet = 0  # Наши считаемые баллы
         self.sostoyanie = "start"  # Работает игра сейчас или нет, в каком она находится состоянии
         self.pole = []  # Игровое поле
@@ -213,8 +214,6 @@ class Tetris:
         self.break_lines()
         self.novaya_figura()
         if self.peresechenie():
-            pygame.mixer.music.pause()
-            sound2.play()
             self.sostoyanie = "gameover"
 
     # Двигаем в бок с помощью кулачков
@@ -244,6 +243,8 @@ pygame.mixer.music.set_volume(0.1)
 
 sound1 = pygame.mixer.Sound('Placed.mp3')
 sound2 = pygame.mixer.Sound('GameO.mp3')
+sound3 = pygame.mixer.Sound('Win.mp3')
+sound4 = pygame.mixer.Sound('Click.mp3')
 
 # Определение цветов
 CHERNYY = (0, 0, 0)
@@ -304,18 +305,22 @@ while menu_active:
         if event.type == pygame.QUIT:
             konets = True
             menu_active = False
+            sound4.play()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if start_button_rect.collidepoint(event.pos):
                 menu_active = False
+                sound4.play()
                 break
             elif instruction_button_rect.collidepoint(event.pos):
+                sound4.play()
                 display_instructions()
+
 
 # Сама игра
 
 prev_fist_left = False
 prev_fist_right = False
-
+musica = False
 
 while(cap.isOpened()):
     ret, frame = cap.read()
@@ -415,9 +420,29 @@ while(cap.isOpened()):
     if igra.sostoyanie == "gameover":
         ekran.blit(text_game_over, [20, 200])
         ekran.blit(text_game_over1, [25, 265])
-    if igra.schet >= 9999:
+        pygame.mixer.music.pause()
+        if not musica:
+            sound2.play()
+            musica = True
+    if igra.schet >= 1000:
         ekran.blit(text_game_win, [20, 200])
         ekran.blit(text_game_over1, [25, 265])
+        pygame.mixer.music.pause()
+        if not musica:
+            sound3.play()
+            musica = True
+
+    # Эск
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            cap.release()
+            pygame.quit()
+            exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:  # Проверяем нажатие клавиши Escape
+                cap.release()
+                pygame.quit()
+                exit()
 
 
 
