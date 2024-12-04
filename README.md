@@ -1,5 +1,5 @@
 # Ниже представлена программа, которая будет все, собственно, делать
- 
+
 import pygame
 import random
 import cv2
@@ -22,9 +22,9 @@ def display_instructions():
     """Показывает экран с инструкцией и кнопкой 'Обратно'."""
     ekran.fill(BELYI)
 
-    font_title = pygame.font.SysFont('Calibri', 50, True, False)
-    font_button = pygame.font.SysFont('Calibri', 30, True, False)
-    small_font = pygame.font.SysFont('Calibri', 20, True, False)
+    font_title = pygame.font.SysFont('Calibri', 30, True, False)
+    font_button = pygame.font.SysFont('Calibri', 20, True, False)
+    small_font = pygame.font.SysFont('Calibri', 17, True, False)
 
     # Текст инструкции
     instruction_text_lines = [
@@ -33,8 +33,7 @@ def display_instructions():
         "- Управление осуществляется движениями рук.",
         "- Левый кулак двигает фигуру вправо.",
         "- Правый кулак двигает фигуру влево.",
-        "- Поднятый указательный палец вращает фигуру.",
-        "- Зажмите кулаки, чтобы ускорить падение фигуры.",
+        "- Оба зажатых кулака крутят вигуру.",
     ]
 
     rendered_lines = [small_font.render(line, True, CHERNYY) for line in instruction_text_lines]
@@ -133,7 +132,7 @@ class Figura:
 # Поскольку недавно мы проходили классы, это наилучший из вариантов
 class Tetris:
     def __init__(self, vysota, shirina):
-        self.uroven = 10  # Уровень сложности
+        self.uroven = 5  # Уровень сложности
         self.schet = 0  # Наши считаемые баллы
         self.sostoyanie = "start"  # Работает игра сейчас или нет, в каком она находится состоянии
         self.pole = []  # Игровое поле
@@ -316,7 +315,7 @@ while menu_active:
 
 prev_fist_left = False
 prev_fist_right = False
-prev_palec = False
+
 
 while(cap.isOpened()):
     ret, frame = cap.read()
@@ -343,6 +342,8 @@ while(cap.isOpened()):
             if 2 * r / ws > 1.3:
                 cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 0, 255), 2)
                 # Кулак разжат
+
+
                 if hand_idx == 0:
                     prev_fist_left = False
                 else:
@@ -353,10 +354,16 @@ while(cap.isOpened()):
                     # Левый кулак был сжат
                     igra.v_bok(1)
                     prev_fist_left = True
+
                 elif hand_idx == 1 and not prev_fist_right:
                     # Правый кулак был сжат
                     igra.v_bok(-1)
                     prev_fist_right = True
+
+                if prev_fist_right and prev_fist_left:
+                    igra.povernut()
+
+
 
 
 
@@ -388,9 +395,6 @@ while(cap.isOpened()):
                                       igra.y + igra.uvelichenie * (i + igra.figura.y) + 1,
                                       igra.uvelichenie - 2, igra.uvelichenie - 2])
 
-    pygame.display.flip()
-    chas.tick(fps)
-
     # Показываем наше видео
     # cv2.imshow("Kulachok", otrazheniye)
     # if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -414,6 +418,11 @@ while(cap.isOpened()):
     if igra.schet >= 9999:
         ekran.blit(text_game_win, [20, 200])
         ekran.blit(text_game_over1, [25, 265])
+
+
+
+    pygame.display.flip()
+    chas.tick(fps)
 
 cap.release()
 pygame.quit()
