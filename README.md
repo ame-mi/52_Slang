@@ -320,6 +320,7 @@ while menu_active:
 
 prev_fist_left = False
 prev_fist_right = False
+pov = False
 musica = False
 
 while (cap.isOpened()):
@@ -372,8 +373,11 @@ while (cap.isOpened()):
                     igra.v_bok(-1)
                     prev_fist_right = True
 
-                if prev_fist_right and prev_fist_left:
+                if not prev_fist_right or not prev_fist_left:
+                    pov = False
+                elif prev_fist_right and prev_fist_left and not pov:
                     igra.povernut()
+                    pov = True
 
     # Движение вниз
     schetchik += 1
