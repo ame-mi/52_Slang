@@ -335,6 +335,12 @@ while (cap.isOpened()):
     if results.multi_hand_landmarks is not None:
         for hand_idx, hand_landmarks in enumerate(results.multi_hand_landmarks):
             handedness = results.multi_handedness[hand_idx].classification[0].label  # 'Right' или 'Left'
+
+            # Инвертируем значения
+            if handedness == 'Right':
+                handedness = 'Left'
+            elif handedness == 'Left':
+                handedness = 'Right'
             # Получаем точки и параметры руки
             points = get_points(hand_landmarks.landmark, flippedRGB.shape)
             (x, y), r = cv2.minEnclosingCircle(points)
@@ -346,22 +352,22 @@ while (cap.isOpened()):
             print(f"Hand: {hand_idx}, Handedness: {handedness}, Fist Detected: {prev_fist_left}/{prev_fist_right}")
 
             # Проверяем соотношение размера окружности к размеру ладони
-            if 2 * r / ws > 1.3:
+            if 2 * r / ws > 1.5:
                 cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 0, 255), 2)
                 # Кулак разжат
 
-                if hand_idx == 0 :
+                if handedness == "Left" :
                     prev_fist_left = False
                 else:
                     prev_fist_right = False
             else:
                 cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 255, 0), 2)
-                if hand_idx == 0 and not prev_fist_left:
+                if handedness == "Left" and not prev_fist_left:
                     # Левый кулак был сжат
                     igra.v_bok(1)
                     prev_fist_left = True
 
-                elif hand_idx == 1 and not prev_fist_right:
+                elif handedness == "Right" and not prev_fist_right:
                     # Правый кулак был сжат
                     igra.v_bok(-1)
                     prev_fist_right = True
