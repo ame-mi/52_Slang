@@ -36,6 +36,8 @@ def display_instructions():
         "- Левый кулак двигает фигуру вправо.",
         "- Правый кулак двигает фигуру влево.",
         "- Оба зажатых кулака крутят вигуру.",
+        "- Во избежание багов, не убирайте",
+        " руки из поля зрения камеры"
     ]
 
     rendered_lines = [small_font.render(line, True, CHERNYY) for line in instruction_text_lines]
@@ -341,7 +343,7 @@ while (cap.isOpened()):
             # Рисуем контуры
             cv2.drawContours(flippedRGB, [points], 0, (255, 0, 0), 2)
 
-            # print(f"Hand: {hand_idx}, Handedness: {handedness}, Fist Detected: {prev_fist_left}/{prev_fist_right}")
+            print(f"Hand: {hand_idx}, Handedness: {handedness}, Fist Detected: {prev_fist_left}/{prev_fist_right}")
 
             # Проверяем соотношение размера окружности к размеру ладони
             if 2 * r / ws > 1.3:
@@ -417,7 +419,7 @@ while (cap.isOpened()):
         if not musica:
             sound2.play()
             musica = True
-    if igra.schet >= 4999:
+    if igra.schet >= 2000:
         ekran.blit(text_game_win, [20, 200])
         ekran.blit(text_game_over1, [25, 265])
         pygame.mixer.music.pause()
